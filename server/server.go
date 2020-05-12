@@ -5,8 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	blockchain "github.com/theiny/goldie-blocking-chain/blockchain"
 	log "github.com/theiny/slog"
+	"github.com/theiny/goldie-blocking-chain/adding"
+	"github.com/theiny/goldie-blocking-chain/listing"
 )
 
 type data struct {
@@ -15,7 +16,8 @@ type data struct {
 
 type server struct {
 	Router     *gin.Engine
-	BlockChain *blockchain.BlockChain
+	Adding adding.Service
+	Listing listing.Service
 }
 
 func New() *server {
@@ -30,9 +32,12 @@ func (s *server) AddBlock(c *gin.Context) {
 		return
 	}
 
-	s.BlockChain.AddBlock([]byte(req.Data))
+	s.Adding.AddBlock([]byte(req.Data))
+
+	c.JSON(http.StatusOK, "Added new block")
 }
 
 func (s *server) GetBlocks(c *gin.Context) {
-	c.JSON(http.StatusOK, s.BlockChain)
+	bc := s.Listing.GetBlockChain()
+	c.JSON(http.StatusOK, bc)
 }

@@ -13,17 +13,6 @@ type BlockChain struct {
 	Blocks []*Block
 }
 
-type Iterator struct {
-	currentHash []byte
-	db          *BlockChain
-}
-
-func (i *Iterator) Next() *Block {
-	var block *Block
-
-	return block
-}
-
 // creates a new block
 func createBlock(data []byte, prevHash []byte) *Block {
 	block := &Block{[]byte{}, data, prevHash, 0}
