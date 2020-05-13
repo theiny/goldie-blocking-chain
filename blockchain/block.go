@@ -1,26 +1,29 @@
 package blockchain
 
-const genesisData = "This is a reference to the genesis block"
+const (
+	genesisData    = "This is a reference to the genesis block"
+	GenesisAddress = "adam"
+)
 
 // Block defines a since block of the blockchain.
 type Block struct {
-	Hash         []byte
-	Transactions []*Transaction
-	PrevHash     []byte
-	Nonce        int
+	Hash         []byte         `json:"hash"`
+	Transactions []*Transaction `json:"transactions"`
+	PrevHash     []byte         `json:"previous_hash"`
+	Nonce        int            `json:"nonce"`
 }
 
 // Blockchain is made up of a slice of blocks.
 type Blockchain struct {
-	Blocks []*Block
+	Blocks []*Block `json:"blocks"`
 }
 
 // creates a new block
 func newBlock(txs []*Transaction, prevHash []byte) *Block {
 	block := &Block{[]byte{}, txs, prevHash, 0}
 
-	pow := NewProof(block)
-	nonce, hash := pow.Run()
+	pow := newProof(block)
+	nonce, hash := pow.run()
 
 	block.Hash = hash[:]
 	block.Nonce = nonce
@@ -36,13 +39,13 @@ func (chain *Blockchain) AddBlock(tx []*Transaction) {
 }
 
 // Genesis creates the first 'genesis' block of the blockchain.
-func Genesis(coinbase *Transaction) *Block {
+func createGenesis(coinbase *Transaction) *Block {
 	return newBlock([]*Transaction{coinbase}, []byte{})
 }
 
 // InitBlockChain initializes a new blockchain.
 func InitBlockChain(address string) *Blockchain {
-	cbtx := CoinbaseTx(address, genesisData)
-	genesis := Genesis(cbtx)
+	cbtx := coinbaseTx(address, genesisData)
+	genesis := createGenesis(cbtx)
 	return &Blockchain{[]*Block{genesis}}
 }

@@ -12,20 +12,20 @@ import (
 const subsidy = 100
 
 type Transaction struct {
-	ID      []byte
-	Inputs  []TxInput
-	Outputs []TxOutput
+	ID      []byte     `json:"id"`
+	Inputs  []TxInput  `json:"inputs"`
+	Outputs []TxOutput `json:"outputs"`
 }
 
 type TxInput struct {
-	ID  []byte
-	Out int
-	Sig string
+	ID  []byte `json:"input_id"`
+	Out int    `json:"output"`
+	Sig string `json:"signature"`
 }
 
 type TxOutput struct {
-	Value  int
-	PubKey string
+	Value  int    `json:"value"`
+	PubKey string `json:"address"`
 }
 
 func (tx *Transaction) setID() {
@@ -42,8 +42,8 @@ func (tx *Transaction) setID() {
 	tx.ID = hash[:]
 }
 
-// CoinbaseTx creates a seed transaction for the genesis block.
-func CoinbaseTx(to, data string) *Transaction {
+// coinbaseTx creates a seed transaction for the genesis block.
+func coinbaseTx(to, data string) *Transaction {
 	if data == "" {
 		data = fmt.Sprintf("Coins to %s", to)
 	}

@@ -53,5 +53,5 @@ func (s *server) ShowBalance(c *gin.Context) {
 
 	balance := s.Listing.GetBalance(addr)
 
-	respond(c, fmt.Sprintf("Balance of %s: %d", addr, balance))
+	respond(c, fmt.Sprintf("Balance of %s: %d golden nuggets", addr, balance))
 }

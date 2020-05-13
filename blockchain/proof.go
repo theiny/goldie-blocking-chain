@@ -2,40 +2,40 @@ package blockchain
 
 import (
 	"bytes"
+	"log"
 	"crypto/sha256"
 	"encoding/binary"
 
 	"math"
 	"math/big"
-	log "github.com/theiny/slog"
 )
 
 // difficulty is an arbitrary number to calculate the target. This value would usually be determined and adjusted over time using an algorithm.
 const difficulty = 12
 
-type ProofOfWork struct {
+type proofOfWork struct {
 	Block  *Block
 	Target *big.Int
 }
 
-// NewProof takes a block and creates a new proof of work with the given target.
-func NewProof(b *Block) *ProofOfWork {
+// newProof takes a block and creates a new proof of work with the given target.
+func newProof(b *Block) *proofOfWork {
 	target := big.NewInt(1)
 	target.Lsh(target, uint(256-difficulty))
 
-	pow := &ProofOfWork{b, target}
+	pow := &proofOfWork{b, target}
 
 	return pow
 }
 
 // prepareData encapsulates all the data which will eventually get hashed.
-func (pow *ProofOfWork) prepareData(nonce int) []byte {
+func (pow *proofOfWork) prepareData(nonce int) []byte {
 	data := bytes.Join(
 		[][]byte{
 			pow.Block.PrevHash,
 			pow.Block.HashTransactions(),
-			ToHex(int64(nonce)),
-			ToHex(int64(difficulty)),
+			toHex(int64(nonce)),
+			toHex(int64(difficulty)),
 		},
 		[]byte{},
 	)
@@ -43,8 +43,8 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
-// Run executes the algorithm to sequentially find a nonce that is appropriate to sign the block.
-func (pow *ProofOfWork) Run() (int, []byte) {
+// executes the algorithm to sequentially find a nonce that is appropriate to sign the block.
+func (pow *proofOfWork) run() (int, []byte) {
 	var intHash big.Int
 	var hash [32]byte
 
@@ -69,7 +69,7 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 }
 
 // Validate takes the nonce assigned to the block produced by the proof of work, and runs it through the hash function to validate it.
-func (pow *ProofOfWork) Validate() bool {
+func (pow *proofOfWork) Validate() bool {
 	var intHash big.Int
 
 	data := pow.prepareData(pow.Block.Nonce)
@@ -80,12 +80,12 @@ func (pow *ProofOfWork) Validate() bool {
 	return intHash.Cmp(pow.Target) == -1
 }
 
-// ToHex is a helper function to convert an int64 to []byte.
-func ToHex(num int64) []byte {
+// toHex is a helper function to convert an int64 to []byte.
+func toHex(num int64) []byte {
 	buff := new(bytes.Buffer)
 	err := binary.Write(buff, binary.BigEndian, num)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	return buff.Bytes()
 }
