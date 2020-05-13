@@ -17,15 +17,15 @@ type Transaction struct {
 	Outputs []TxOutput
 }
 
-type TxOutput struct {
-	Value  int
-	PubKey string
-}
-
 type TxInput struct {
 	ID  []byte
 	Out int
 	Sig string
+}
+
+type TxOutput struct {
+	Value  int
+	PubKey string
 }
 
 func (tx *Transaction) setID() {
@@ -89,8 +89,9 @@ func (bc *Blockchain) FindUnspentTransactions(address string) []Transaction {
 	var unspent []Transaction
 	spent := make(map[string][]int)
 
-	for _, block := range bc.Blocks {
-		for _, tx := range block.Transactions {
+	// need to loop through the blocks in reverse order starting with the latest.
+	for i := len(bc.Blocks) - 1; i >= 0; i-- {
+		for _, tx := range bc.Blocks[i].Transactions {
 			id := hex.EncodeToString(tx.ID)
 		Outputs:
 			for outID, out := range tx.Outputs {
@@ -117,11 +118,6 @@ func (bc *Blockchain) FindUnspentTransactions(address string) []Transaction {
 				}
 			}
 		}
-
-		// break if the block is our genesis block.
-		if len(block.PrevHash) == 0 {
-			break
-		}
 	}
 
 	return unspent
@@ -142,21 +138,20 @@ func (bc *Blockchain) FindUTXO(address string) []TxOutput {
 	return UTXOs
 }
 
-func (bc *Blockchain) NewTransaction(from, to string, amount int) *Transaction {
+func (bc *Blockchain) NewTransaction(from, to string, amount int) (*Transaction, error) {
 	var inputs []TxInput
 	var outputs []TxOutput
 
 	acc, validOutputs := bc.findSpendableOutputs(from, amount)
-
 	if acc < amount {
-		log.Println("ERROR: Not enough funds")
+		return nil, fmt.Errorf("%s does not have enough funds. Current balance: %d", from, acc)
 	}
 
-	// Build a list of inputs
+	// Build a list of inputs based on the outputs.
 	for txid, outs := range validOutputs {
 		txID, err := hex.DecodeString(txid)
 		if err != nil {
-			log.Println(err)
+			return nil, err
 		}
 
 		for _, out := range outs {
@@ -174,24 +169,24 @@ func (bc *Blockchain) NewTransaction(from, to string, amount int) *Transaction {
 	tx := Transaction{nil, inputs, outputs}
 	tx.setID()
 
-	return &tx
+	return &tx, nil
 }
 
 // find all unspent outputs and ensure that they store enough value before creating an input referencing that output.
 func (bc *Blockchain) findSpendableOutputs(address string, amount int) (int, map[string][]int) {
 	unspentOutputs := make(map[string][]int)
 	unspentTXs := bc.FindUnspentTransactions(address)
+
 	accumulated := 0
 
 Work:
 	for _, tx := range unspentTXs {
 		txID := hex.EncodeToString(tx.ID)
 
-		for outIdx, out := range tx.Outputs {
+		for outID, out := range tx.Outputs {
 			if out.canBeUnlockedWith(address) && accumulated < amount {
 				accumulated += out.Value
-				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
-
+				unspentOutputs[txID] = append(unspentOutputs[txID], outID)
 				if accumulated >= amount {
 					break Work
 				}

@@ -1,12 +1,12 @@
 package listing
 
 import (
-	"log"
 	"github.com/theiny/goldie-blocking-chain/blockchain"
 )
 
 type Service interface {
 	GetBlockChain() *blockchain.Blockchain
+	GetBalance(addr string) int
 }
 
 type service struct {
@@ -21,14 +21,13 @@ func (s *service) GetBlockChain() *blockchain.Blockchain{
 	return s.bc
 }
 
-func (s *service) ShowBalance() {
-	address := "aRandomAddress"
+func (s *service) GetBalance(addr string) int {
 	balance := 0
-	UTXOs := s.bc.FindUTXO(address)
+	UTXOs := s.bc.FindUTXO(addr)
 
 	for _, out := range UTXOs {
 		balance += out.Value
 	}
 
-	log.Printf("Balance of '%s': %d\n", address, balance)
+	return balance
 }
