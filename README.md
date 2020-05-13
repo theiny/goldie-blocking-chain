@@ -10,6 +10,8 @@ A RESTful representation demonstrating the underlying principles of how Blockcha
 
 ### Sending 
 
+For sending virtual gold from one user to another. 
+
 `POST` `/api/v1/blockchain/send`
 
 **Request**
@@ -44,6 +46,8 @@ If there is an insufficient amount of gold in the account when sending:
 ```
 
 ### Listing
+
+This returns the blockchain and its entities in its current state. It shows the relationships between each block as well as the transaction history.
 
 `GET` `/api/v1/blockchain/list`
 
@@ -108,6 +112,8 @@ If there is an insufficient amount of gold in the account when sending:
 
 ### Show Balance
 
+Get the balance of a user by specifiying the address used in the transaction. 
+
 `GET` `/api/v1/blockchain/balance/:addr`
 
 **Request**
@@ -124,4 +130,7 @@ If there is an insufficient amount of gold in the account when sending:
 }
 ```
 
+Sources:
 
+https://jeiwan.net/posts/building-blockchain-in-go-part-1/
+https://www.youtube.com/watch?v=mYlHT9bB6OE
